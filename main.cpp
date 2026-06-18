@@ -12,6 +12,14 @@
 #include <thread>
 #include <vector>
 
+/* Unused Constants */
+const int default_start_y = 2;
+const int default_start_x = 2;
+const int default_map_h = 10;
+const int default_map_w = 10;
+
+/* ======= Object Defintions  ======== */
+
 struct Map 
 {
     int height;
@@ -19,7 +27,8 @@ struct Map
     std::vector<std::vector<char>> grid; // Logical Buffer Model (LBM)
 };
 
-struct Player {
+struct Player 
+{
     char symbol = '@';
     int x;
     int y;
@@ -38,7 +47,7 @@ int main(int argc, char* argv[])
     Map map;
     map.height = 10;
     map.width = 20;
-    map.grid = std::vector<std::vector<char>>(map.height, std::vector<char>(map.width, '.'));
+    map.grid = std::vector<std::vector<char>>(map.height, std::vector<char>(map.width, '*'));
 
     Player player;
     player = {'@', 2, 2};
