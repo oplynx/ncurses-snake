@@ -11,12 +11,10 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <numeric>
+#include <cmath>
 
-/* Unused Constants */
-const int default_start_y = 2;
-const int default_start_x = 2;
-const int default_map_h = 10;
-const int default_map_w = 10;
+#include "utils/constants.h"
 
 /* ======= Object Defintions  ======== */
 
@@ -45,16 +43,17 @@ int main(int argc, char* argv[])
     init_ncurses(); // Initialize ncurses
 
     Map map;
-    map.height = 10;
-    map.width = 20;
+    map.height = default_map_h;
+    map.width = default_map_w;
     map.grid = std::vector<std::vector<char>>(map.height, std::vector<char>(map.width, '*'));
 
     Player player;
-    player = {'@', 2, 2};
+    player = {'@', default_start_x, default_start_y};
 
     map.grid[player.y][player.x] = player.symbol;
 
-    WINDOW *game_win = create_win(map.height + 2, map.width + 2, 2, 5);   
+    int win_w = (map.width*2) + 2;
+    WINDOW *game_win = create_win(map.height + 2, win_w, 2, 5);   
    
     // Init map render so player shows up immediately
     render_map(game_win, map);
@@ -101,17 +100,30 @@ void init_ncurses()
 void render_map(WINDOW* win, const Map& map) 
 {
     // Clear the inside of the window, then redraw the border
-    werase(win);
+    wclear(win);
     box(win, 0,0);
 
     for (int y = 0; y < map.height; ++y) {
         for (int x = 0; x < map.width; ++x) {
-            /* y+1 and x+1 prevents overwriting the window borders */
-            mvwaddch(win, y+1, x+1, map.grid[y][x]);
+            char curr_ch = map.grid[y][x];
+
+            int screen_x1 = (x*2) + 1;
+            int screen_x2 = (x*2) + 2;
+            int screen_y = y + 1;
+
+            if (curr_ch == '@') {
+                // If it's the player, print a padded block or pair to look symmetrical
+                mvwaddch(win, screen_y, screen_x1, '[');
+                mvwaddch(win, screen_y, screen_x2, ']');
+            } else {
+                // For standard tiles, print them twice side-by-side to make a square block
+                mvwaddch(win, screen_y, screen_x1, curr_ch);
+                mvwaddch(win, screen_y, screen_x2, curr_ch);
+            }
         }
     }
 
-    wrefresh(win);
+    wrefresh(win); // minimize draw calls
 }
 
 /* Function for Creating Windows of parameters heihgt, width, positions y and x */
@@ -144,4 +156,5 @@ void destroy_win(WINDOW *local_win)
 
     wrefresh(local_win);
     wclear(local_win);
+    delwin(local_win); // clean window memory allocation
 }
